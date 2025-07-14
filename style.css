@@ -113,6 +113,14 @@
             margin-top: 30px;
         }
 
+        #listaProductos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
         .products-section h2 {
             color: #333;
             margin-bottom: 20px;
@@ -291,4 +299,16 @@
             .stats {
                 grid-template-columns: 1fr;
             }
+
+             .producto-item {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    margin: 0;
+    border-radius: 6px;
+    border-left: 4px solid #ffcccc;
+    width: 280px; /* Agregá esta línea */
+    box-sizing: border-box; /* Asegura que padding no rompa el ancho */
+    flex: 0 0 auto; /* Evita que se reduzcan demasiado */
+}
+            
         }

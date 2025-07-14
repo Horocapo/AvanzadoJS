@@ -1,94 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Productos - CodeHouse</title>
-   <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chantimulador</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Gestor de Productos</h1>
-            <p>Sistema de gestión de inventario - Segunda Preentrega JavaScript</p>
-        </div>
+  <h1>Chantimulador de Gestión de Inventario</h1>
+  <p class="descripcion">
+    Simulador para controlar stock diario en una cafetería.
+  </p>
 
-        <div class="content">
-            <div class="form-section">
-                <h2>Agregar Nuevo Producto</h2>
-                <div id="messages"></div>
-                <form id="productForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="productName">Nombre del Producto *</label>
-                            <input type="text" id="productName" name="productName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="productPrice">Precio *</label>
-                            <input type="number" id="productPrice" name="productPrice" step="0.01" min="0" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="productCategory">Categoría *</label>
-                            <select id="productCategory" name="productCategory" required>
-                                <option value="">Selecciona una categoría</option>
-                                <option value="Electrónicos">Electrónicos</option>
-                                <option value="Ropa">Ropa</option>
-                                <option value="Hogar">Hogar</option>
-                                <option value="Deportes">Deportes</option>
-                                <option value="Libros">Libros</option>
-                                <option value="Juguetes">Juguetes</option>
-                                <option value="Otros">Otros</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="productQuantity">Cantidad Inicial *</label>
-                            <input type="number" id="productQuantity" name="productQuantity" min="0" value="1" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="productDescription">Descripción</label>
-                        <textarea id="productDescription" name="productDescription" rows="3" placeholder="Describe tu producto..."></textarea>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary">Agregar Producto</button>
-                </form>
-            </div>
-            <div class="stats">
-                <div class="stat-card">
-                    <h3 id="totalProducts">0</h3>
-                    <p>Total Productos</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="totalValue">$0</h3>
-                    <p>Valor Total</p>
-                </div>
-                <div class="stat-card">
-                    <h3 id="totalQuantity">0</h3>
-                    <p>Cantidad Total</p>
-                </div>
-            </div>
-            <div class="products-section">
-                <h2>Lista de Productos</h2>
-                <div id="productsContainer">
-                    <div class="empty-state">
-                        <h3>No hay productos agregados</h3>
-                        <p>Agrega tu primer producto usando el formulario de arriba</p>
-                    </div>
-                </div>
-            </div>
+  <div class="formulario-section">
+    <h2>Agregar Producto</h2>
+    <div id="mensajes"></div>
+    <form id="formularioProducto">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombreProducto">Nombre:</label>
+          <input type="text" id="nombreProducto" required />
         </div>
+        <div class="form-group">
+          <label for="precioProducto">Precio ($):</label>
+          <input type="number" id="precioProducto" step="0.01" min="0" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="categoriaProducto">Categoría:</label>
+          <select id="categoriaProducto" required>
+            <option value="">Selecciona una</option>
+            <option value="Bebidas Calientes">Bebidas Calientes</option>
+            <option value="Bebidas Frías">Bebidas Frías</option>
+            <option value="Pastelería">Pastelería</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Insumos">Insumos</option>
+            <option value="Otros">Otros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cantidadProducto">Cantidad:</label>
+          <input type="number" id="cantidadProducto" min="1" value="1" required />
+        </div>
+      </div>
+      <button type="submit" class="btn">Agregar</button>
+    </form>
+  </div>
+
+  <div class="productos-section">
+    <h2>Inventario</h2>
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-number" id="totalProductos">0</div>
+        <div class="stat-label">Productos</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="totalCantidad">0</div>
+        <div class="stat-label">Stock Total</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="valorTotal">$0</div>
+        <div class="stat-label">Valor Total</div>
+      </div>
     </div>
- <script src="script.js"></script>
-    <script>
-        // Inicializar la aplicación
-        const productManager = new ProductManager();
+    <div id="listaProductos"></div>
+  </div>
 
-        // Funciones globales para los botones (necesarias para onclick)
-        window.productManager = productManager;
-    </script>
+  <script src="script.js"></script>
 </body>
 </html>

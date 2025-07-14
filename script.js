@@ -1,198 +1,89 @@
+const formulario = document.getElementById("formularioProducto");
+const listaProductos = document.getElementById("listaProductos");
+const totalProductos = document.getElementById("totalProductos");
+const totalCantidad = document.getElementById("totalCantidad");
+const valorTotal = document.getElementById("valorTotal");
 
-        class ProductManager {
-            constructor() {
-                this.products = [];
-                this.loadFromStorage();
-                this.initializeEvents();
-                this.renderProducts();
-                this.updateStats();
-            }
+let inventario = JSON.parse(localStorage.getItem("inventario")) || [];
 
-            // Inicializar eventos del DOM
-            initializeEvents() {
-                const form = document.getElementById('productForm');
-                form.addEventListener('submit', (e) => this.handleFormSubmit(e));
-            }
+function renderInventario() {
+  listaProductos.innerHTML = "";
 
-            // Manejar envío del formulario
-            handleFormSubmit(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(e.target);
-                const productData = {
-                    name: formData.get('productName').trim(),
-                    price: parseFloat(formData.get('productPrice')),
-                    category: formData.get('productCategory'),
-                    quantity: parseInt(formData.get('productQuantity')),
-                    description: formData.get('productDescription').trim()
-                };
+  if (inventario.length === 0) {
+    listaProductos.innerHTML = `<div class="sin-productos"><p>No hay productos agregados</p></div>`;
+    actualizarStats();
+    return;
+  }
 
-                if (this.validateProduct(productData)) {
-                    this.addProduct(productData);
-                    this.clearForm();
-                    this.showMessage('Producto agregado exitosamente', 'success');
-                }
-            }
+  inventario.forEach((prod, index) => {
+    const item = document.createElement("div");
+    item.className = "producto-item";
+    item.innerHTML = `
+      <div class="producto-header">
+        <div>
+          <div class="producto-nombre">${prod.nombre}</div>
+          <div class="producto-precio">$${prod.precio.toFixed(2)}</div>
+          <div class="producto-categoria">${prod.categoria}</div>
+        </div>
+        <div class="producto-controles">
+          <div class="cantidad-controles">
+            <button class="btn-cantidad" data-accion="restar" data-index="${index}">-</button>
+            <div class="cantidad-display">${prod.cantidad}</div>
+            <button class="btn-cantidad" data-accion="sumar" data-index="${index}">+</button>
+          </div>
+          <button class="btn-eliminar" data-index="${index}">Eliminar</button>
+        </div>
+      </div>
+    `;
+    listaProductos.appendChild(item);
+  });
 
-            // Validar datos del producto
-            validateProduct(product) {
-                if (!product.name || product.name.length < 2) {
-                    this.showMessage('El nombre del producto debe tener al menos 2 caracteres', 'error');
-                    return false;
-                }
+  actualizarStats();
+}
 
-                if (product.price <= 0) {
-                    this.showMessage('El precio debe ser mayor a 0', 'error');
-                    return false;
-                }
+function actualizarStats() {
+  const total = inventario.length;
+  const cantidadTotal = inventario.reduce((sum, p) => sum + p.cantidad, 0);
+  const valor = inventario.reduce((sum, p) => sum + p.cantidad * p.precio, 0);
 
-                if (!product.category) {
-                    this.showMessage('Debe seleccionar una categoría', 'error');
-                    return false;
-                }
+  totalProductos.textContent = total;
+  totalCantidad.textContent = cantidadTotal;
+  valorTotal.textContent = `$${valor.toFixed(2)}`;
+}
 
-                if (product.quantity < 0) {
-                    this.showMessage('La cantidad no puede ser negativa', 'error');
-                    return false;
-                }
+function guardarInventario() {
+  localStorage.setItem("inventario", JSON.stringify(inventario));
+}
 
-                // Verificar si el producto ya existe
-                if (this.products.some(p => p.name.toLowerCase() === product.name.toLowerCase())) {
-                    this.showMessage('Ya existe un producto con ese nombre', 'error');
-                    return false;
-                }
+formulario.addEventListener("submit", function (e) {
+  e.preventDefault();
 
-                return true;
-            }
+  const nombre = document.getElementById("nombreProducto").value.trim();
+  const precio = parseFloat(document.getElementById("precioProducto").value);
+  const categoria = document.getElementById("categoriaProducto").value;
+  const cantidad = parseInt(document.getElementById("cantidadProducto").value);
 
-            // Agregar producto
-            addProduct(productData) {
-                const product = {
-                    id: Date.now(),
-                    ...productData,
-                    createdAt: new Date().toLocaleDateString()
-                };
+  if (!nombre || isNaN(precio) || !categoria || isNaN(cantidad)) return;
 
-                this.products.push(product);
-                this.saveToStorage();
-                this.renderProducts();
-                this.updateStats();
-            }
+  const nuevoProducto = { nombre, precio, categoria, cantidad };
+  inventario.push(nuevoProducto);
+  guardarInventario();
+  renderInventario();
+  formulario.reset();
+});
 
-            // Eliminar producto
-            deleteProduct(id) {
-                this.products = this.products.filter(product => product.id !== id);
-                this.saveToStorage();
-                this.renderProducts();
-                this.updateStats();
-                this.showMessage('Producto eliminado correctamente', 'success');
-            }
+listaProductos.addEventListener("click", function (e) {
+  const index = e.target.dataset.index;
+  if (e.target.classList.contains("btn-eliminar")) {
+    inventario.splice(index, 1);
+  } else if (e.target.dataset.accion === "sumar") {
+    inventario[index].cantidad++;
+  } else if (e.target.dataset.accion === "restar") {
+    if (inventario[index].cantidad > 1) inventario[index].cantidad--;
+  }
+  guardarInventario();
+  renderInventario();
+});
 
-            // Actualizar cantidad del producto
-            updateQuantity(id, change) {
-                const product = this.products.find(p => p.id === id);
-                if (product) {
-                    const newQuantity = product.quantity + change;
-                    if (newQuantity >= 0) {
-                        product.quantity = newQuantity;
-                        this.saveToStorage();
-                        this.renderProducts();
-                        this.updateStats();
-                    }
-                }
-            }
-
-            // Renderizar productos
-            renderProducts() {
-                const container = document.getElementById('productsContainer');
-                
-                if (this.products.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <h3>No hay productos agregados</h3>
-                            <p>Agrega tu primer producto usando el formulario de arriba</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                const productsHTML = this.products.map(product => `
-                    <div class="product-card">
-                        <div class="product-header">
-                            <div class="product-name">${this.escapeHtml(product.name)}</div>
-                            <div class="product-price">$${product.price.toFixed(2)}</div>
-                        </div>
-                        <div class="product-category">${product.category}</div>
-                        ${product.description ? `<div class="product-description">${this.escapeHtml(product.description)}</div>` : ''}
-                        <div class="product-actions">
-                            <div class="quantity-controls">
-                                <button class="btn-quantity" onclick="productManager.updateQuantity(${product.id}, -1)">-</button>
-                                <span class="quantity-display">${product.quantity}</span>
-                                <button class="btn-quantity" onclick="productManager.updateQuantity(${product.id}, 1)">+</button>
-                            </div>
-                            <button class="btn-delete" onclick="productManager.deleteProduct(${product.id})">Eliminar</button>
-                        </div>
-                    </div>
-                `).join('');
-
-                container.innerHTML = `<div class="products-grid">${productsHTML}</div>`;
-            }
-
-            // Actualizar estadísticas
-            updateStats() {
-                const totalProducts = this.products.length;
-                const totalQuantity = this.products.reduce((sum, product) => sum + product.quantity, 0);
-                const totalValue = this.products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
-
-                document.getElementById('totalProducts').textContent = totalProducts;
-                document.getElementById('totalQuantity').textContent = totalQuantity;
-                document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
-            }
-
-            // Mostrar mensajes
-            showMessage(message, type) {
-                const messagesContainer = document.getElementById('messages');
-                const messageClass = type === 'success' ? 'success-message' : 'error-message';
-                
-                messagesContainer.innerHTML = `
-                    <div class="${messageClass}">
-                        ${message}
-                    </div>
-                `;
-
-                // Limpiar mensaje después de 5 segundos
-                setTimeout(() => {
-                    messagesContainer.innerHTML = '';
-                }, 5000);
-            }
-
-            // Limpiar formulario
-            clearForm() {
-                document.getElementById('productForm').reset();
-            }
-
-            // Guardar en localStorage
-            saveToStorage() {
-                localStorage.setItem('products', JSON.stringify(this.products));
-            }
-
-            // Cargar desde localStorage
-            loadFromStorage() {
-                const saved = localStorage.getItem('products');
-                if (saved) {
-                    try {
-                        this.products = JSON.parse(saved);
-                    } catch (e) {
-                        console.error('Error al cargar datos:', e);
-                        this.products = [];
-                    }
-                }
-            }
-
-            // Escapar HTML para prevenir XSS
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-        }
+// Inicial
+renderInventario();
